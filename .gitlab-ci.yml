@@ -1,0 +1,72 @@
+stages:
+  # - build
+  # - test
+  - review
+  - staging
+  # - production
+
+services:
+  - docker:dind
+
+# before_script:
+#   - echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+#   - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+#   - gcloud config set project $PROJECT_ID
+
+# after_script:
+#   - gcloud builds submit --tag=asia.gcr.io/$PROJECT_ID/$IMAGE_NAME:$CI_COMMIT_TAG --project=$PROJECT_ID
+#   - gcloud run deploy $SERVICE_NAME --image=asia.gcr.io/$PROJECT_ID/$IMAGE_NAME --platform=managed --region=asia-northeast1
+
+review:
+  image: google/cloud-sdk
+  # image: google/cloud-sdk:alpine
+  stage: review
+  environment: review
+  only:
+    - develop
+  script:
+    - export PROJECT_ID=buyma-tool-341513
+    - export IMAGE_NAME=buyma-review-backend-api
+    - export SERVICE_NAME=buyma-review-backend-api
+
+    # Sheets API 認証情報
+    - echo $SHEETS_CREDENTIALS > sheets/secrets/credentials.json
+    - echo $SHEETS_TOKEN > sheets/secrets/token.json
+
+    # ログイン
+    - echo $GCLOUD_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $PROJECT_ID
+
+    # ビルド&デプロイ
+    - gcloud builds submit --tag "asia.gcr.io/$PROJECT_ID/$IMAGE_NAME:CI_PIPELINE_ID_$CI_PIPELINE_ID" --project "$PROJECT_ID"
+    # - gcloud run deploy $SERVICE_NAME --image "asia.gcr.io/$PROJECT_ID/$IMAGE_NAME:CI_PIPELINE_ID_$CI_PIPELINE_ID" --platform "managed" --region "asia-northeast1"
+    - gcloud run deploy $SERVICE_NAME --image "asia.gcr.io/$PROJECT_ID/$IMAGE_NAME:CI_PIPELINE_ID_$CI_PIPELINE_ID" --region "asia-northeast1"
+  # when: manual
+
+staging:
+  image: google/cloud-sdk
+  # image: google/cloud-sdk:alpine
+  environment: staging
+  stage: staging
+  only:
+    - staging
+  script:
+    - export PROJECT_ID=buyma-tool-341513
+    - export IMAGE_NAME=buyma-staging-backend-api
+    - export SERVICE_NAME=buyma-staging-backend-api
+
+    # Sheets API 認証情報
+    - echo $SHEETS_CREDENTIALS > sheets/secrets/credentials.json
+    - echo $SHEETS_TOKEN > sheets/secrets/token.json
+    
+    # ログイン
+    - echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+    - gcloud config set project $PROJECT_ID
+
+    # ビルド&デプロイ
+    - gcloud builds submit --tag "asia.gcr.io/$PROJECT_ID/$IMAGE_NAME:CI_PIPELINE_ID_$CI_PIPELINE_ID" --project "$PROJECT_ID"
+    # - gcloud run deploy $SERVICE_NAME --image "asia.gcr.io/$PROJECT_ID/$IMAGE_NAME:CI_PIPELINE_ID_$CI_PIPELINE_ID" --platform "managed" --region "asia-northeast1"
+    - gcloud run deploy $SERVICE_NAME --image "asia.gcr.io/$PROJECT_ID/$IMAGE_NAME:CI_PIPELINE_ID_$CI_PIPELINE_ID" --region "asia-northeast1"
+  when: manual

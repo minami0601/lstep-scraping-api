@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  gcloud-tasks-emulator:
+    image: ghcr.io/aertje/cloud-tasks-emulator:latest
+    command: -host 0.0.0.0 -port 8123 -queue "projects/my-project-id/locations/us-central1/queues/my"
+    ports:
+      - 8123:8123
+    environment:
+        APP_ENGINE_EMULATOR_HOST: http://localhost:8080
+    extra_hosts:
+      - "local_dev:${LOCAL_IP_ADDR}"
