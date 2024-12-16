@@ -6,7 +6,12 @@ import json2csv from 'json2csv'
 import openai from 'openai'
 import { createReadStream } from 'fs'
 import logger from '@/shared/Logger'
-type ChatCompletionMessage = openai.Chat.Completions.ChatCompletionMessage
+type ChatCompletionMessage = {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+import dotenv from 'dotenv'
+dotenv.config()
 
 interface FileJsonl {
   messages: ChatCompletionMessage[]
@@ -197,5 +202,3 @@ class GoogleV1Dao {
 }
 
 export default GoogleV1Dao
-
-マークダウンに変換してやってみよう

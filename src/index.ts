@@ -1,4 +1,6 @@
-// TODO メンテナンスモード
+// Must be the first import
+import dotenv from 'dotenv'
+dotenv.config()
 
 import './pre-start' // Must be the first import
 import app from '@/Server'
@@ -11,6 +13,10 @@ import { workerLog } from '@/shared/functions'
 import runSocket from './Socket'
 import http from 'http'
 import { Express } from 'express'
+import baseRouter from '@/routes'
+
+// ベースルーターを設定
+app.use('/api', baseRouter)
 
 const PORT = Number(process.env.PORT || 3000)
 const HOST = String(process.env.HOST || 'http://localhost')
@@ -120,7 +126,6 @@ logger.info(`ITEM_COUNT: ${PLAN_COUNT.BASIC.NO6.ITEM_COUNT}`)
 logger.info(`ORDER_RECORD: ${PLAN_COUNT.BASIC.NO6.ORDER_RECORD}\n`)
 
 import OpenAI from 'openai'
-
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
@@ -132,8 +137,11 @@ const openai = new OpenAI({
 import * as lineSDK from '@line/bot-sdk'
 import { WebhookEvent } from '@line/bot-sdk'
 
-const client = new lineSDK.Client({
-  channelAccessToken: '',
-})
+// const client = new lineSDK.Client({
+//   channelAccessToken: '',
+// })
 
-client.pushMessage('userID', '')
+// client.pushMessage('userID', {
+//   type: 'text',
+//   text: 'Hello, this is a text message.'
+// });
